@@ -4,6 +4,7 @@ import './../../assets/styles/Empleados.css';
 
 function Empleados(){
 
+    const [modalNuevoEmpleado, setModalNuevoEmpleado] = useState(false);
     const [modalEditarAbierto, setModalEditarAbierto] = useState(false);
     const [modalEliminarAbierto, setModalEliminarAbierto] = useState(false);
     const [empleadoActual, setEmpleadoActual] = useState(null);
@@ -24,9 +25,14 @@ function Empleados(){
         setModalEliminarAbierto(true);
     };
 
+    const abrirModalNuevo = () => {
+        setModalNuevoEmpleado(true);
+    };
+
     const cerrarModal = () => {
         setModalEditarAbierto(false);
         setModalEliminarAbierto(false);
+        setModalNuevoEmpleado(false);
         setEmpleadoActual(null);
     };
 
@@ -48,12 +54,16 @@ function Empleados(){
         setEmpleados((prev) => prev.filter((emp) => emp.id !== empleadoActual.id));
         cerrarModal();
     };
+    
+    const agregarEmpleado = () => {
+        console.log('Se agrego el empelado');
+    }
 
     return(
         <div>
             <div className="header">
                 <h1>Empleados registrados</h1>
-                <button className="btn btn-nuevo">Nuevo empleado</button>
+                <button className="btn btn-nuevo" onClick={() => abrirModalNuevo()}>Nuevo empleado</button>
             </div>
             <table className="tabla-empleados">
                 <thead>
@@ -117,6 +127,31 @@ function Empleados(){
                         <div className="modal-buttons">
                             <button className="btn btn-eliminar" onClick={eliminarEmpleado}>Eliminar</button>
                             <button className="btn btn-editar" onClick={cerrarModal}>Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal para agregar nuevo */}
+            {modalNuevoEmpleado && (
+                <div className='modal-overlay'>
+                    <div className='modal'>
+                        <h2>Agregar nuevo empleado</h2>
+                        <label>
+                            Nombre:
+                            <input type="text" name="nombre" />
+                        </label>
+                        <label>
+                            Teléfono:
+                            <input type="number" name="telefono" />
+                        </label>
+                        <label>
+                            Puesto:
+                            <input type="text" name="puesto" />
+                        </label>
+                        <div className="modal-buttons">
+                            <button className="btn btn-nuevo">Guardar</button>
+                            <button className="btn btn-eliminar" onClick={cerrarModal}>Cancelar</button>
                         </div>
                     </div>
                 </div>
