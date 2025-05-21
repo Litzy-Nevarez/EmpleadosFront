@@ -1,0 +1,9 @@
+.inicio-container {
+  display: flex;
+}
+
+.contenido-principal {
+  margin-left: 250px;
+  padding: 20px;
+  width: calc(100% - 200px);
+}
