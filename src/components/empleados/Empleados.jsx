@@ -1,19 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import './../../assets/styles/Empleados.css';
 
 function Empleados(){
 
-    const [modalNuevoEmpleado, setModalNuevoEmpleado] = useState(false);
+    const [nuevoEmpleado, setNuevoEmpleado] = useState({ nombre: '', telefono: '', puesto: '' });
     const [modalEditarAbierto, setModalEditarAbierto] = useState(false);
     const [modalEliminarAbierto, setModalEliminarAbierto] = useState(false);
-    const [empleadoActual, setEmpleadoActual] = useState(null);
+    const [modalNuevoEmpleado, setModalNuevoEmpleado] = useState(false);
 
-    const empleados = [
-        { id: 1, nombre: 'Juan Pérez', telefono: '618-123-4567', puesto: 'Contador' },
-        { id: 2, nombre: 'María García', telefono: '618-987-6543', puesto: 'Recursos Humanos' },
-        { id: 3, nombre: 'Carlos Sánchez', telefono: '618-456-7890', puesto: 'Ingeniero' },
-    ];
+    const [empleadoActual, setEmpleadoActual] = useState(null);
+    const [empleados, setEmpleados] = useState([]);
 
     const abrirModalEditar = (empleado) => {
         setEmpleadoActual({ ...empleado });
@@ -26,6 +23,7 @@ function Empleados(){
     };
 
     const abrirModalNuevo = () => {
+        setNuevoEmpleado({ nombre: '', telefono: '', puesto: '' });
         setModalNuevoEmpleado(true);
     };
 
@@ -38,26 +36,67 @@ function Empleados(){
 
     const handleChange = (e) => {
         setEmpleadoActual({
-        ...empleadoActual,
-        [e.target.name]: e.target.value,
+            ...empleadoActual,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const handleNuevoChange = (e) => {
+        setNuevoEmpleado({
+            ...nuevoEmpleado,
+            [e.target.name]: e.target.value
         });
     };
 
     const guardarCambios = () => {
-        setEmpleados((prev) =>
-        prev.map((emp) => (emp.id === empleadoActual.id ? empleadoActual : emp))
-        );
-        cerrarModal();
+        fetch(`http://localhost:3000/api/empleados/${empleadoActual.id_empleado}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(empleadoActual)
+        })
+            .then(res => res.json())
+            .then((data) => {
+                setEmpleados((prev) =>
+                prev.map((emp) => (emp.id === empleadoActual.id_empleado ? data : emp))
+                );
+            cerrarModal();
+            })
+            .catch(err => console.error(err));
     };
 
     const eliminarEmpleado = () => {
-        setEmpleados((prev) => prev.filter((emp) => emp.id !== empleadoActual.id));
-        cerrarModal();
+        fetch(`http://localhost:3000/api/empleados/${empleadoActual.id_empleado}`, {
+            method: 'DELETE'
+        })
+            .then(() => {
+            setEmpleados((prev) => prev.filter((emp) => emp.id !== empleadoActual.id_empleado));
+            cerrarModal();
+            })
+            .catch(err => console.error(err));
     };
     
     const agregarEmpleado = () => {
-        console.log('Se agrego el empelado');
-    }
+        fetch('http://localhost:3000/api/empleados', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(nuevoEmpleado)
+        })
+            .then(res => res.json())
+            .then(data => {
+            setEmpleados([...empleados, data]);
+            cerrarModal();
+            setNuevoEmpleado({ nombre: '', telefono: '', puesto: '' });
+            })
+            .catch(err => console.error(err));
+    };
+
+    useEffect(() => {
+        fetch('http://localhost:3000/api/empleados')
+            .then(res => res.json())
+            .then(data => setEmpleados(data))
+            .catch(err => console.error(err));
+        }, 
+    []);
 
     return(
         <div>
@@ -77,8 +116,8 @@ function Empleados(){
                 </thead>
                 <tbody>
                 {empleados.map((emp) => (
-                    <tr key={emp.id}>
-                    <td>{emp.id}</td>
+                    <tr key={emp.id_em}>
+                    <td>{emp.id_empleado}</td>
                     <td>{emp.nombre}</td>
                     <td>{emp.telefono}</td>
                     <td>{emp.puesto}</td>
@@ -139,18 +178,18 @@ function Empleados(){
                         <h2>Agregar nuevo empleado</h2>
                         <label>
                             Nombre:
-                            <input type="text" name="nombre" />
+                            <input type="text" name="nombre" value={nuevoEmpleado.nombre} onChange={handleNuevoChange} />
                         </label>
                         <label>
                             Teléfono:
-                            <input type="number" name="telefono" />
+                            <input type="text" name="telefono" value={nuevoEmpleado.telefono} onChange={handleNuevoChange} />
                         </label>
                         <label>
                             Puesto:
-                            <input type="text" name="puesto" />
+                            <input type="text" name="puesto" value={nuevoEmpleado.puesto} onChange={handleNuevoChange} />
                         </label>
                         <div className="modal-buttons">
-                            <button className="btn btn-nuevo">Guardar</button>
+                            <button className="btn btn-nuevo" onClick={agregarEmpleado}>Guardar</button>
                             <button className="btn btn-eliminar" onClick={cerrarModal}>Cancelar</button>
                         </div>
                     </div>

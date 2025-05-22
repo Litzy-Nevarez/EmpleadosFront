@@ -9,12 +9,33 @@ function App() {
   const navigate = useNavigate();
 
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     console.log('Email:', email)
     console.log('Password:', password)
 
-    navigate('/inicio');
+    try {
+      const response = await fetch('http://localhost:3000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert('Login exitoso');
+        console.log(data.user);  // aquí tienes acceso a los datos del usuario
+        navigate('/inicio');
+      } else {
+        alert(data.message || 'Credenciales incorrectas');
+      }
+    } catch (error) {
+      console.error('Error al hacer login:', error);
+      alert('Error de conexión con el servidor');
+    }
   }
 
   return (
